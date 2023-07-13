@@ -1,0 +1,19 @@
+*.json
+
+# PyInstaller build files
+__pycache__/
+build/
+dist/
+
+# Compiled Python files
+*.pyc
+*.pyo
+*.pyd
+
+# Temporary files
+*.bak
+*.swp
+*~
+
+# Miscellaneous
+.DS_Store

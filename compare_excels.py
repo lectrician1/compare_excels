@@ -20,7 +20,7 @@ def save_settings():
         "sheet1": entry_sheet1.get(),
         "file2": entry_file2.get(),
         "sheet2": entry_sheet2.get(),
-        "join_column": entry_join.get()
+        "join_columns": entry_join.get()
     }
     with open(SETTINGS_FILE, "w") as file:
         json.dump(settings, file)
@@ -33,7 +33,7 @@ def load_settings():
             entry_sheet1.insert(tk.END, settings["sheet1"])
             entry_file2.insert(tk.END, settings["file2"])
             entry_sheet2.insert(tk.END, settings["sheet2"])
-            entry_join.insert(tk.END, settings["join_column"])
+            entry_join.insert(tk.END, settings["join_columns"])
     except FileNotFoundError:
         pass
 
@@ -47,7 +47,7 @@ def compare_excel_files():
     file_path2 = entry_file2.get()
     sheet_name1 = entry_sheet1.get()
     sheet_name2 = entry_sheet2.get()
-    join_column = entry_join.get()
+    join_columns = entry_join.get().split('|')
 
     try:
         df1 = pd.read_excel(file_path1, sheet_name=sheet_name1)
@@ -59,7 +59,7 @@ def compare_excel_files():
         compare = datacompy.Compare(
             df1,
             df2,
-            join_columns=join_column,
+            join_columns=join_columns,
             abs_tol=0.0001,
             rel_tol=0,
             df1_name=file_name1,
@@ -76,10 +76,10 @@ def compare_excel_files():
         # Insert the comparison report text
         report_text.insert(tk.END, str(compare.report()))
 
-        join_column_lowered = join_column.lower()
+        last_join_column_lowered = join_columns[-1].lower()
 
         # Find the index of "catalog_id" in the text
-        index = report_text.search(join_column_lowered, 1.0, tk.END)
+        index = report_text.search(last_join_column_lowered, 1.0, tk.END)
 
         report_text.tag_configure("red", foreground="red")
 
@@ -88,7 +88,7 @@ def compare_excel_files():
             
 
             # Get the next word after "catalog_id"
-            next_word_index = report_text.search(r"[a-z|A-Z]", index + f"+{len(join_column)}c", stopindex=tk.END, regexp=True)
+            next_word_index = report_text.search(r"[a-z|A-Z]", index + f"+{len(last_join_column_lowered)}c", stopindex=tk.END, regexp=True)
             if next_word_index:
                 next_word_end = report_text.search(r"\s", next_word_index, stopindex=tk.END, regexp=True)
 
@@ -96,7 +96,7 @@ def compare_excel_files():
                 report_text.tag_add("red", next_word_index, next_word_end)
 
             # Find the next occurrence of "catalog_id"
-            index = report_text.search(join_column_lowered, next_word_end, tk.END)
+            index = report_text.search(last_join_column_lowered, next_word_end, tk.END)
         
         
 
@@ -139,7 +139,7 @@ entry_sheet2 = tk.Entry(root, width=30)
 entry_sheet2.grid(row=3, column=1)
 
 # Join Column
-label_join = tk.Label(root, text="Join Column:")
+label_join = tk.Label(root, text="Join Columns (if multiple, split by \"|\"):")
 label_join.grid(row=4, column=0)
 entry_join = tk.Entry(root, width=30)
 entry_join.grid(row=4, column=1)
